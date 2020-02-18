@@ -1,0 +1,10 @@
+name: "create-or-update-sendgrid-design-action"
+description: "GitHub action to create or update SendGrid Designs"
+
+runs:
+  using: "node12"
+  main: "index.js"
+
+branding:
+  icon: "tag"
+  color: "green"
