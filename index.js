@@ -33,18 +33,26 @@ const getAllDesigns = async page => {
 
 const getHtml = name =>
   new Promise((resolve, reject) => {
-    fs.readFile(`${workspace}/packages/${name}/dist/template.html`, 'utf8', (err, data) => {
-      if (err) reject(err)
-      resolve(data)
-    })
+    fs.readFile(
+      `${workspace}/packages/${name}/dist/template.html`,
+      'utf8',
+      (err, data) => {
+        if (err) reject(err)
+        resolve(data)
+      },
+    )
   })
 
 const getMetadata = name =>
   new Promise((resolve, reject) => {
-    fs.readFile(`${workspace}/packages/${name}/dist/meta.json`, 'utf8', (err, data) => {
-      if (err) reject(err)
-      resolve(data)
-    })
+    fs.readFile(
+      `${workspace}/packages/${name}/dist/meta.json`,
+      'utf8',
+      (err, data) => {
+        if (err) reject(err)
+        resolve(data)
+      },
+    )
   })
 
 const createOrUpdateDesign = (id, name, subject, html) => {
@@ -77,7 +85,13 @@ const run = async () => {
     const design = designs.find(dsgn => dsgn.name === name) || {}
 
     console.log(`Creating or updating design ${name}`)
-    const { updated_at } = await createOrUpdateDesign(design.id, name, subject, html)
+    throw Error('hello there')
+    const { updated_at } = await createOrUpdateDesign(
+      design.id,
+      name,
+      subject,
+      html,
+    )
     console.log(`${name} created or updated successfully at ${updated_at}`)
   } catch (e) {
     console.log('Something went wrong')
