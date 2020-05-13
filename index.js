@@ -1,6 +1,7 @@
 const core = require('@actions/core')
 const github = require('@actions/github')
 const client = require('@sendgrid/client')
+const { exec } = require('@actions/exec')
 const qs = require('qs')
 const fs = require('fs')
 
@@ -76,15 +77,30 @@ const createOrUpdateDesign = (id, name, subject, html) => {
 const run = async () => {
   try {
     console.log('Fetching designs from SendGrid')
-    const designs = await getAllDesigns()
-    console.log(`${designs.length} designs fetched`)
+    // const designs = await getAllDesigns()
+    // console.log(`${designs.length} designs fetched`)
 
-    const [name] = context.ref.split('/')[2].split('@')
-    const html = await getHtml(name)
-    const { subject } = await getMetadata(name).then(JSON.parse)
-    const design = designs.find(dsgn => dsgn.name === name) || {}
+    // console.log(JSON.stringify(context))
 
-    console.log(`Creating or updating design ${name}`)
+    let tags = ''
+    await exec('git', ['tag', '--points-at', context.sha], {
+      listeners: {
+        stdout: data => {
+          tags = data
+            .toString()
+            .split('\n')
+            .filter(tag => tag.startsWith('email-'))
+        },
+      },
+    })
+
+    console.log({ tags })
+    // const [name] = context.ref.split('/')[2].split('@')
+    // const html = await getHtml(name)
+    // const { subject } = await getMetadata(name).then(JSON.parse)
+    // const design = designs.find(dsgn => dsgn.name === name) || {}
+
+    // console.log(`Creating or updating design ${name}`)
     throw Error('hello there')
     const { updated_at } = await createOrUpdateDesign(
       design.id,
