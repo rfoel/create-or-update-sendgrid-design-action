@@ -74,41 +74,47 @@ const createOrUpdateDesign = (id, name, subject, html) => {
     .then(([, data]) => data)
 }
 
+const getTags = async () => {
+  let tags
+  await exec('git', ['tag', '--points-at', context.sha], {
+    listeners: {
+      stdout: data => {
+        tags = data
+          .toString()
+          .split('\n')
+          .filter(tag => tag.startsWith('email-'))
+      },
+    },
+  })
+  return tags
+}
+
 const run = async () => {
   try {
     console.log('Fetching designs from SendGrid')
-    // const designs = await getAllDesigns()
-    // console.log(`${designs.length} designs fetched`)
+    const designs = await getAllDesigns()
+    console.log(`${designs.length} designs fetched`)
 
-    // console.log(JSON.stringify(context))
+    const tags = await getTags()
+    const names = tags.map(tag => tag.split('@')[0])
 
-    let tags = ''
-    await exec('git', ['tag', '--points-at', context.sha], {
-      listeners: {
-        stdout: data => {
-          tags = data
-            .toString()
-            .split('\n')
-            .filter(tag => tag.startsWith('email-'))
-        },
-      },
-    })
+    await Promise.all(
+      names.map(async name => {
+        const html = await getHtml(name)
+        const { subject } = await getMetadata(name).then(JSON.parse)
+        const design = designs.find(dsgn => dsgn.name === name) || {}
 
-    console.log({ tags })
-    // const [name] = context.ref.split('/')[2].split('@')
-    // const html = await getHtml(name)
-    // const { subject } = await getMetadata(name).then(JSON.parse)
-    // const design = designs.find(dsgn => dsgn.name === name) || {}
+        console.log(`Creating or updating design ${name}`)
 
-    // console.log(`Creating or updating design ${name}`)
-    throw Error('hello there')
-    const { updated_at } = await createOrUpdateDesign(
-      design.id,
-      name,
-      subject,
-      html,
+        const { updated_at } = await createOrUpdateDesign(
+          design.id,
+          name,
+          subject,
+          html,
+        )
+        console.log(`${name} created or updated successfully at ${updated_at}`)
+      }),
     )
-    console.log(`${name} created or updated successfully at ${updated_at}`)
   } catch (e) {
     console.log('Something went wrong')
     core.setFailed(e)
